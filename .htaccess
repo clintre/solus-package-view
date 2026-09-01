@@ -1,0 +1,11 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Ignore if the user is asking for a real file (like a CSS/JS file)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    # Ignore if the user is asking for a real directory
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Capture the package name from the URL and pass it to index.php
+    RewriteRule ^([^/]+)/?$ index.php?pkg=$1 [QSA,L]
+</IfModule>
