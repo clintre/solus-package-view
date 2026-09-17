@@ -1,9 +1,8 @@
 <?php
-
+// Will want to create a better display for failures. Just a place holder.
 if (empty($_GET['pkg'])){
     die("Error: Invalid or missing package name!");
 }
-
 
 $packageName    = sanitizePackageName($_GET['pkg']);
 $pkgPath        = getPackagePth($packageName);
@@ -17,24 +16,37 @@ $homeRoot = '/pkgs/';
 $yamlContent = @file_get_contents($pymlUrl);
 
 // If does not exist, die
+// Will want to create a better display for failures. Just a place holder.
 if ($yamlContent === false || trim($yamlContent) === '404: Not Found') {
     die("Error: Could not find package.yml for package '{$packageName}'. Please check the package name.\n");
 }
 
 // This allows us to customize which yaml keys to display
-$allowedKeys = [
-    'name',
-    'version',
-    'homepage',
-    'license',
-    'release',
-    'source',
-    'component',
-    'summary',
-    'description',
-    'builddeps',
-    'rundeps'
-];
+// If empty it will display all keys. Add keys 'key1','key2', etc.
+$allowedKeys = [];
+
+/**
+ * KEY OPTIONS
+ * name
+ * version
+ * homepage
+ * license
+ * release
+ * source
+ * component
+ * summary
+ * description
+ * builddeps
+ * rundeps
+ * checkdeps
+ * clang
+ * optimize
+ * setup
+ * build
+ * install
+ * check
+ * pattern
+ */
 
 // Just some clean up for display
 $yamlContent = preg_replace('/^[\xef\xbb\xbf]+/', '', $yamlContent);
@@ -51,11 +63,12 @@ foreach ($lines as $line) {
         continue;
     }
 
+
     if (preg_match('/^\s*([a-zA-Z0-9_-]+)\s*:/', $line, $matches)) {
         $currentKey = $matches[1];
 
         // If the key is in our allowed list, turn saving ON. Otherwise, turn it OFF.
-        if (in_array($currentKey, $allowedKeys)) {
+        if ((empty($allowedKeys)) || (in_array($currentKey, $allowedKeys))) {
             $isKeeping = true;
             $cleanLine = preg_replace('/\s*\|\s*$/', '', $line);
             $output[] = $cleanLine;
@@ -115,13 +128,12 @@ function sanitizePackageName($rawName) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css" integrity="sha256-XoaMnoYC5TH6/+ihMEnospgm0J1PM/nioxbOUdnM8HY=" crossorigin="anonymous">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" rel="stylesheet" />
     <style>
-    /* Style the pre block to look like a read-only textbox */
+    /* Style the pre block to look like a textbox */
     pre.textbox-style {
         border: 1px solid #ccc;
                 border-radius: 4px;
                 padding: 12px;
                 background-color: #0A0E14;
-                max-height: 700px;
                 overflow-y: auto; /* Adds a scrollbar if lines are too long */
                 font-family: monospace;
                 font-size: 14px;
@@ -146,7 +158,6 @@ Solus Package - <?= $packageName ?>
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
                     <a class="nav-link" href="https://getsol.us/">Website</a>
