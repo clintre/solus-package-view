@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting to Solus Package...</title>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const pkgName = params.get('pkg');
+
+        if (pkgName) {
+            const lowerPkg = pkgName.toLowerCase();
+            let folder = '';
+
+            // Check if the package starts with 'py'
+            if (lowerPkg.startsWith('py')) {
+                folder = 'py';
+            } else {
+                // Use first letter
+                folder = lowerPkg.charAt(0);
+            }
+
+            // Construct the final URL
+            const targetUrl = `https://github.com/getsolus/packages/tree/main/packages/${folder}/${pkgName}`;
+
+            // Execute the redirect
+            window.location.replace(targetUrl);
+        } else {
+            // Fallback: Redirect to the top-level packages directory if no package is specified
+            window.location.replace('https://github.com/getsolus/packages/tree/main/packages/');
+        }
+    </script>
+</head>
+<body>
+<p>Redirecting to the Solus packages repository...</p>
+<!-- Fallback for users who have JavaScript disabled -->
+<noscript>
+    <p>JavaScript is required for this redirect. Please visit the <a href="https://github.com/getsolus/packages/tree/main/packages/">Solus Packages repository</a> directly.</p>
+</noscript>
+</body>
+</html>
