@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting to Solus Package...</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .error {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="container" id="status-container">
+    <p id="status-message">Locating package...</p>
+</div>
+
+<script>
+    async function checkAndRedirect() {
+        const params = new URLSearchParams(window.location.search);
+        const pkgName = params.get('pkg');
+        const statusMessage = document.getElementById('status-message');
+
+        if (!pkgName) {
+            window.location.replace('https://github.com/getsolus/packages/tree/main/packages/');
+            return;
+        }
+
+        const lowerPkg = pkgName.toLowerCase();
+        let folder = lowerPkg.startsWith('py') ? 'py' : lowerPkg.charAt(0);
+
+        // The URL we want the user to end up at
+        const targetUrl = `https://github.com/getsolus/packages/tree/main/packages/${folder}/${pkgName}`;
+
+        // The GitHub API URL to check if the directory actually exists
+        const apiUrl = `https://api.github.com/repos/getsolus/packages/contents/packages/${folder}/${pkgName}?ref=main`;
+
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+
+            if (response.ok) {
+                // Package exists! Do the redirect.
+                statusMessage.innerText = "Package found! Redirecting...";
+                window.location.replace(targetUrl);
+            } else if (response.status === 404) {
+                // Package folder does not exist
+                statusMessage.innerHTML = `<span class="error">Error 404:</span> Package <strong>${pkgName}</strong> could not be found in the repository. <br><br> <a href="https://github.com/getsolus/packages/tree/main/packages/">Go to all packages</a>`;
+            } else {
+                // Handle other errors (like rate limits)
+                statusMessage.innerHTML = `<span class="error">Error:</span> Unexpected response from GitHub. <br><br> <a href="${targetUrl}">Try navigating directly</a>`;
+            }
+        } catch (error) {
+            // Network errors
+            statusMessage.innerHTML = `<span class="error">Network Error:</span> Could not verify package existence. <br><br> <a href="${targetUrl}">Try navigating directly</a>`;
+        }
+    }
+
+    // Run the script on load
+    checkAndRedirect();
+</script>
+</body>
+</html>
